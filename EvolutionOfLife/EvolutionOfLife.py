@@ -2,47 +2,46 @@ import numpy as np
 import random
 
 #HyperParameters
-keepSize = 10 #How much population we keep from the last step
-populationSize = 100 #Size of our population
+keepSize = int(10) #How much population we keep from the last step
+populationSize = int(100) #Size of our population
 keepRatio = populationSize/keepSize #Ratio of staying population
 mutationRate = 0.1 #Rate of the mutation
-mapSize = 500 #Size of the map
-individualSize = 10 #Size of the map
-epoch = 100 #Number of map iterations
+mapSize = int(250) #Size of the map
+individualSize = int(10) #Size of the map
+epoch = int(100) #Number of map iterations
 
 #Game variables
 map = None
 population = None
 fitness = np.zeros((1, populationSize))
 
-def nextStep():
+def nextStep(iteration):
     global map
     global mapSize
+    global individualSize
 
     newMap = np.zeros((mapSize,mapSize))
+    for y in range(int(mapSize/2)-iteration-individualSize, int(mapSize/2)+iteration+individualSize):
+        for x in range(mapSize):
+            if (map[y][x] == 1):
+                newMap[y-1][x-1] += 1
+                newMap[y-1][x] += 1
+                newMap[y-1][x+1] += 1
+                newMap[y][x-1] += 1
+                newMap[y][x+1] += 1
+                newMap[y+1][x-1] += 1
+                newMap[y+1][x] += 1
+                newMap[y+1][x+1] += 1
     for y in range(mapSize):
         for x in range(mapSize):
-            neighbor = 0
-            if (y-1 >= 0 and map[y-1][x] == 1):
-                neighbor += 1
-            if (y+1 < mapSize and map[y+1][x] == 1):
-                neighbor += 1
-            if (x-1 >= 0 and map[y][x-1] == 1):
-                neighbor += 1
-            if (x+1 < mapSize and map[y][x+1] == 1):
-                neighbor += 1
-            if (y-1 >= 0 and x-1 >= 0 and map[y-1][x-1] == 1):
-                neighbor += 1
-            if (y+1 < mapSize and x-1 >= 0 and map[y+1][x-1] == 1):
-                neighbor += 1
-            if (y-1 >= 0 and x+1 < mapSize and map[y-1][x+1] == 1):
-                neighbor += 1
-            if (y+1 < mapSize and x+1 < mapSize and map[y+1][x+1] == 1):
-                neighbor += 1
-            if ((map[y][x] == 1 and (neighbor == 3 or neighbor == 2)) or
-                (map[y][x] == 0 and neighbor == 3)):
-                newMap[y][x] = 1
-    return (newMap)
+            if (newMap[y][x] == 0 or newMap[y][x] > 3):
+                map[y][x] = 0
+            elif ((map[y][x] == 1 and (newMap[y][x] == 3 or newMap[y][x] == 2)) or
+                (map[y][x] == 0 and newMap[y][x] == 3)):
+                map[y][x] = 1
+            else:
+                map[y][x] = 0
+    return (map)
 
 def score():
     global mapSize
@@ -103,7 +102,7 @@ def computeOneStep(individual):
                 str += "%d"%map[a+y][a+x]
             str+="\n"
         print(str)
-        map = nextStep()
+        map = nextStep(i)
     return (fitness)
 
 def nextEpoch():
